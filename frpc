@@ -1,0 +1,43 @@
+#!/bin/sh
+
+server_addr="frps"
+server_port="7000"
+admin_addr="0.0.0.0"
+admin_port="7400"
+token=""
+
+contains(){
+    case "$2" in
+        *$1*) return 0;;
+        *) return 1;;
+    esac
+}
+
+if [[ "$#" -gt 0 ]]; then
+    if contains "$1 " "help http https stcp sudp tcp tcpmux udp xtcp "; then
+        /bin/_frpc $@
+        exit $?
+    fi
+fi
+
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -h|--help) /bin/_frpc --help; exit ;;
+        -s|--server_addr) server_addr="$2"; shift ;;
+        -p|--server_port) server_port="$2"; shift ;;
+        -l|--admin_port) admin_port="$2"; shift ;;
+        -u|--admin_addr) admin_addr="$2"; shift ;;
+        -t|--token) token="$2"; shift ;;
+        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+    esac
+    shift
+done
+
+echo "[common]" >> /frpc.ini
+echo "admin_port = $admin_port" >> /frpc.ini
+echo "admin_addr = $admin_addr" >> /frpc.ini
+echo "server_addr = $server_addr" >> /frpc.ini
+echo "server_port = $server_port" >> /frpc.ini
+echo "token = $token" >> /frpc.ini
+
+/bin/_frpc -c /frpc.ini
