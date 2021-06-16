@@ -1,4 +1,4 @@
-ARG version=0.35.1
+ARG version=0.37.0
 FROM alpine AS download
 ARG version
 
