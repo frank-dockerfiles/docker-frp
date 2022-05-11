@@ -1,11 +1,5 @@
 #!/bin/sh
 
-server_addr="frps"
-server_port="7000"
-admin_addr="0.0.0.0"
-admin_port="7400"
-token=""
-
 contains(){
     case "$2" in
         *$1*) return 0;;
@@ -20,24 +14,21 @@ if [[ "$#" -gt 0 ]]; then
     fi
 fi
 
+IFS="= "
+echo "[common]" >> /frpc.ini
+
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         -h|--help) /bin/_frpc --help; exit ;;
-        -s|--server_addr) server_addr="$2"; shift ;;
-        -p|--server_port) server_port="$2"; shift ;;
-        -l|--admin_port) admin_port="$2"; shift ;;
-        -u|--admin_addr) admin_addr="$2"; shift ;;
-        -t|--token) token="$2"; shift ;;
-        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+        -s|--server_addr) echo "server_addr = $2" >> /frpc.ini; shift ;;
+        -p|--server_port) echo "server_port = $2" >> /frpc.ini; shift ;;
+        -l|--admin_addr) echo "admin_addr = $2" >> /frpc.ini; shift ;;
+        -u|--admin_port) echo "admin_port = $2" >> /frpc.ini; shift ;;
+        -t|--token) echo "token = $2" >> /frpc.ini; shift ;;
+        --*=*) k=${1:2} && echo "${k%=*} = ${k#*=}" >> /frpc.ini ;;
+        --*) echo "${1:2} = $2" >> /frpc.ini; shift ;;
     esac
     shift
 done
-
-echo "[common]" >> /frpc.ini
-echo "admin_port = $admin_port" >> /frpc.ini
-echo "admin_addr = $admin_addr" >> /frpc.ini
-echo "server_addr = $server_addr" >> /frpc.ini
-echo "server_port = $server_port" >> /frpc.ini
-echo "token = $token" >> /frpc.ini
 
 /bin/_frpc -c /frpc.ini
